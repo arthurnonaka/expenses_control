@@ -2,7 +2,7 @@ import './App.css'
 
 import {tab} from '@testing-library/user-event/dist/tab';
 import {initializeApp} from 'firebase/app'
-import {getDatabase, onValue, push, ref} from 'firebase/database'
+import {getDatabase, onValue, push, ref, remove} from 'firebase/database'
 import React from 'react'
 
 import ChartRender from './components/ChartRender'
@@ -10,36 +10,63 @@ import Header from './components/Header'
 
 const appSettings = {
   databaseURL: 'https://controle-de-fatura-default-rtdb.firebaseio.com/'
-} const app = initializeApp(appSettings)
+} 
+const app = initializeApp(appSettings)
 const database = getDatabase(app)
 const expensesInDB = ref(database, 'expensesControl')
+
 function App() {
   const [expenseArthur, setExpenseArthur] = React.useState(0)
   const [expenseMaysa, setExpenseMaysa] = React.useState(0)
   const [expenseToSplit, setExpenseToSplit] = React.useState(0)
+  React.useEffect(() => {
+    onValue(expensesInDB, function(snapshot) {
+      if (snapshot.exists()) {
+        clearTable()
+        let itemsArray = Object.entries(snapshot.val())
+        let newExpenseArthur = 0
+        let newExpenseMaysa = 0
+        let newExpenseToSplit = 0
+        for (let i = 0; i < itemsArray.length; i++) {
+          addExpenseToTable(itemsArray[i])
+          if (itemsArray[i][1][0].owner == 'Arthur') {
+            newExpenseArthur += parseFloat(itemsArray[i][1][0].value)
+          }
+          else if (itemsArray[i][1][0].owner == 'Maysa') {
+            newExpenseMaysa += parseFloat(itemsArray[i][1][0].value)
+          }
+          else if (itemsArray[i][1][0].owner == 'Dividido') {
+            newExpenseToSplit += parseFloat(itemsArray[i][1][0].value)
+          }
+        }
+      setExpenseArthur(newExpenseArthur)
+      setExpenseMaysa(newExpenseMaysa)
+      setExpenseToSplit(newExpenseToSplit)
+      } else {
+        clearTable()
+        setExpenseArthur(0)
+        setExpenseMaysa(0)
+        setExpenseToSplit(0)
+      }
+    })
+  }, [])
 
-  React.useEffect(() => {onValue(expensesInDB, function(snapshot) {
-                    clearTable()
-                    let itemsArray = Object.values(snapshot.val())
-                    let newExpenseArthur = 0
-                    let newExpenseMaysa = 0
-                    let newExpenseToSplit = 0
-                    for (let i = 0; i < itemsArray.length; i++) {
-                      addExpenseToTable(itemsArray[i])
-                      if (itemsArray[i][0].owner == 'Arthur') {
-                        newExpenseArthur += parseFloat(itemsArray[i][0].value)
-                      }
-                      else if (itemsArray[i][0].owner == 'Maysa') {
-                        newExpenseMaysa += parseFloat(itemsArray[i][0].value)
-                      }
-                      else if (itemsArray[i][0].owner == 'Dividido') {
-                        newExpenseToSplit += parseFloat(itemsArray[i][0].value)
-                      }
-                    }
-                    setExpenseArthur(newExpenseArthur)
-                    setExpenseMaysa(newExpenseMaysa)
-                    setExpenseToSplit(newExpenseToSplit)
-                  })}, [])
+  // function addRowHandlers() {
+  //   var table = document.getElementById("table");
+  //   var rows = table.getElementsByTagName("tr");
+  //   for (let i = 0; i < rows.length; i++) {
+  //     var currentRow = table.rows[i];
+  //     var createClickHandler = function(row) {
+  //       return function() {
+  //         var cell = row.getElementsByTagName("td")[0];
+  //         var id = cell.innerHTML;
+  //         alert("id:" + id);
+  //       };
+  //     };
+  //     currentRow.onclick = createClickHandler(currentRow);
+  //   }
+  // }
+  // window.onload = addRowHandlers();
 
   return (
     <div className='App'>
@@ -48,13 +75,17 @@ function App() {
         <ChartRender soloValue = {expenseArthur} splitValue = {expenseToSplit} name = 'Arthur'/>
         <ChartRender soloValue = {expenseMaysa} splitValue = {expenseToSplit} name = 'Maysa'/>
       </div>
-      <table id="table">
-        <tr>
-          <td>Data</td>
-          <td>Lugar</td>
-          <td>Responsável</td>
-          <td>Valor</td>
-        </tr>
+      <table id="table" border={1}>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Lugar</th>
+            <th>Responsável</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
       </table>
       <div id="input">
         <input id='date-input' placeholder='Data' type="date" max={getTodayDate()}></input>
@@ -71,11 +102,10 @@ function App() {
       </div>
       <span id='check-input'></span>
       <button className='add-btn' onClick={handleAddButon}>Add</button>
-      <button className='delete-btn' onClick={clearTable}>Delete all</button>
+      <button className='delete-btn' onClick={handleDeleteButon}>Delete all</button>
     </div>
   );
 }
-
 
 function clearTable() {
   const table = document.getElementById('table')
@@ -85,17 +115,50 @@ function clearTable() {
   }
 }
 
+function handleRowClick(event) {
+  const clickedRow = event.currentTarget;
+  
+  const cells = clickedRow.cells;
+  const date = cells[0].textContent;
+  const place = cells[1].textContent;
+  const owner = cells[2].textContent;
+  const value = cells[3].textContent;
+  console.log('Row double-clicked:', date, place, owner, value);
+
+  const keyToDelete = clickedRow.getAttribute('data-key'); // Get the Firebase key
+  console.log(keyToDelete)
+  if (keyToDelete) {
+    const dataRef = database.ref('expensesControl');
+    dataRef.child(keyToDelete).remove()
+      .then(() => {
+        console.log('Item deleted from Firebase:', keyToDelete);
+      })
+      .catch(error => {
+        console.error('Error deleting item from Firebase:', error);
+      });
+  }
+}
+
+// Function to add data to the table
 function addExpenseToTable(props) {
-  const table = document.getElementById('table')
-  const row = table.insertRow(1)
-  const date = row.insertCell(0)
-  const location = row.insertCell(1)
-  const owner = row.insertCell(2)
-  const value = row.insertCell(3)
-  date.innerHTML = props[0].date
-  location.innerHTML = props[0].place
-  owner.innerHTML = props[0].owner
-  value.innerHTML = props[0].value
+  const tbody = document.getElementById('table').getElementsByTagName('tbody')[0]
+  console.log("Prop Key: " + props[0])
+  
+  props.forEach(data => {
+    console.log("data Key: " + data[0])
+    const newRow = tbody.insertRow()
+    newRow.setAttribute('data-key', data.key)
+    const dateCell = newRow.insertCell(0)
+    const placeCell = newRow.insertCell(1)
+    const ownerCell = newRow.insertCell(2)
+    const valueCell = newRow.insertCell(3)
+    dateCell.textContent = data[0].date
+    placeCell.textContent = data[0].place
+    ownerCell.textContent = data[0].owner
+    valueCell.textContent = data[0].value
+
+    newRow.addEventListener('dblclick', handleRowClick)
+  });
 }
 
 function handleAddButon() {
@@ -103,8 +166,7 @@ function handleAddButon() {
   let dateValue = ''
   if (dateInput === '') {
     dateValue = getTodayDate()
-  }
-  else {
+  }  else {
     dateValue = dateInput
   }
   const locationInput = document.getElementById('location-input').value
@@ -116,7 +178,8 @@ function handleAddButon() {
     place: locationInput,
     owner: inputOwner,
     value: valueInput
-  }] if (valueInput > 0) {
+  }] 
+  if (valueInput > 0) {
     push(expensesInDB, inputObject)
     resetInputFields()
   }
@@ -127,8 +190,7 @@ function handleAddButon() {
 }
 
 function handleDeleteButon() {
-  const countEl = document.getElementById('count')
-  countEl.textContent = 0
+  remove(expensesInDB)
 }
 
 function getTodayDate() {

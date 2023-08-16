@@ -4,4 +4,20 @@
 
 .charts-section {
   display:flex;
+  align-items: center;
+}
+
+.charts--chart{
+  position: relative;
+}
+
+/* .charts--donut{
+} */
+
+.charts--total{
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
