@@ -24,7 +24,7 @@ export default function ChartRender(props) {
         <div className="charts">
             <p>{props.name}</p>
             <div className="charts--chart">
-                <PieChart className="charts--donut" width={400} height={400}>
+                <PieChart className="charts--donut" width={250} height={250}>
                     <Pie 
                         data={dataValues} 
                         dataKey="value" 

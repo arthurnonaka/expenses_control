@@ -75,7 +75,7 @@ function App() {
         <ChartRender soloValue = {expenseArthur} splitValue = {expenseToSplit} name = 'Arthur'/>
         <ChartRender soloValue = {expenseMaysa} splitValue = {expenseToSplit} name = 'Maysa'/>
       </div>
-      <table id="table" border={1}>
+      <table id="table">
         <thead>
           <tr>
             <th>Data</th>
@@ -101,8 +101,10 @@ function App() {
         <input id='value-input' placeholder='Valor' type='number'></input>
       </div>
       <span id='check-input'></span>
-      <button className='add-btn' onClick={handleAddButon}>Add</button>
-      <button className='delete-btn' onClick={handleDeleteButon}>Delete all</button>
+      <div className='buttons'>
+        <button className='add-btn' onClick={handleAddButon}>Add</button>
+        <button className='delete-btn' onClick={handleDeleteButon}>Delete all</button>
+      </div>
     </div>
   );
 }
@@ -110,42 +112,16 @@ function App() {
 function clearTable() {
   const table = document.getElementById('table')
   for (let i = table.rows.length - 1; i > 0; i--) {
-    console.log('Deleting row at index:', i);
     table.deleteRow(i)
-  }
-}
-
-function handleRowClick(event) {
-  const clickedRow = event.currentTarget;
-  
-  const cells = clickedRow.cells;
-  const date = cells[0].textContent;
-  const place = cells[1].textContent;
-  const owner = cells[2].textContent;
-  const value = cells[3].textContent;
-  console.log('Row double-clicked:', date, place, owner, value);
-
-  const keyToDelete = clickedRow.getAttribute('data-key'); // Get the Firebase key
-  console.log(keyToDelete)
-  if (keyToDelete) {
-    const dataRef = database.ref('expensesControl');
-    dataRef.child(keyToDelete).remove()
-      .then(() => {
-        console.log('Item deleted from Firebase:', keyToDelete);
-      })
-      .catch(error => {
-        console.error('Error deleting item from Firebase:', error);
-      });
   }
 }
 
 // Function to add data to the table
 function addExpenseToTable(props) {
   const tbody = document.getElementById('table').getElementsByTagName('tbody')[0]
-  console.log("Prop Key: " + props[0])
+  let itemID = props[0]
   
   props.forEach(data => {
-    console.log("data Key: " + data[0])
     const newRow = tbody.insertRow()
     newRow.setAttribute('data-key', data.key)
     const dateCell = newRow.insertCell(0)
@@ -157,7 +133,10 @@ function addExpenseToTable(props) {
     ownerCell.textContent = data[0].owner
     valueCell.textContent = data[0].value
 
-    newRow.addEventListener('dblclick', handleRowClick)
+    newRow.addEventListener('dblclick', function() {
+      let locationItemInDB = ref(database, `expensesControl/${itemID}`)
+      remove(locationItemInDB)
+    })
   });
 }
 
