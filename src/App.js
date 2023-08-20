@@ -1,12 +1,12 @@
 import './App.css'
 
-import {tab} from '@testing-library/user-event/dist/tab';
 import {initializeApp} from 'firebase/app'
 import {getDatabase, onValue, push, ref, remove} from 'firebase/database'
 import React from 'react'
 
 import ChartRender from './components/ChartRender'
 import Header from './components/Header'
+import Form from './components/Form'
 
 const appSettings = {
   databaseURL: 'https://controle-de-fatura-default-rtdb.firebaseio.com/'
@@ -29,14 +29,14 @@ function App() {
         let newExpenseToSplit = 0
         for (let i = 0; i < itemsArray.length; i++) {
           addExpenseToTable(itemsArray[i])
-          if (itemsArray[i][1][0].owner == 'Arthur') {
-            newExpenseArthur += parseFloat(itemsArray[i][1][0].value)
+          if (itemsArray[i][1].owner == 'Arthur') {
+            newExpenseArthur += parseFloat(itemsArray[i][1].value)
           }
-          else if (itemsArray[i][1][0].owner == 'Maysa') {
-            newExpenseMaysa += parseFloat(itemsArray[i][1][0].value)
+          else if (itemsArray[i][1].owner == 'Maysa') {
+            newExpenseMaysa += parseFloat(itemsArray[i][1].value)
           }
-          else if (itemsArray[i][1][0].owner == 'Dividido') {
-            newExpenseToSplit += parseFloat(itemsArray[i][1][0].value)
+          else if (itemsArray[i][1].owner == 'Dividido') {
+            newExpenseToSplit += parseFloat(itemsArray[i][1].value)
           }
         }
       setExpenseArthur(newExpenseArthur)
@@ -51,60 +51,38 @@ function App() {
     })
   }, [])
 
-  // function addRowHandlers() {
-  //   var table = document.getElementById("table");
-  //   var rows = table.getElementsByTagName("tr");
-  //   for (let i = 0; i < rows.length; i++) {
-  //     var currentRow = table.rows[i];
-  //     var createClickHandler = function(row) {
-  //       return function() {
-  //         var cell = row.getElementsByTagName("td")[0];
-  //         var id = cell.innerHTML;
-  //         alert("id:" + id);
-  //       };
-  //     };
-  //     currentRow.onclick = createClickHandler(currentRow);
-  //   }
-  // }
-  // window.onload = addRowHandlers();
-
   return (
     <div className='App'>
+      <head>
+        <title>Controle de gastos</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300&display=swap" rel="stylesheet"></link>
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16.png" />
+        <link rel="manifest" href="/logo/site.webmanifest"></link>
+      </head>
       <Header />
       <div className='charts-section'>
         <ChartRender soloValue = {expenseArthur} splitValue = {expenseToSplit} name = 'Arthur'/>
         <ChartRender soloValue = {expenseMaysa} splitValue = {expenseToSplit} name = 'Maysa'/>
       </div>
-      <table id="table">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Lugar</th>
-            <th>Responsável</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-      <div id="input">
-        <input id='date-input' placeholder='Data' type="date" max={getTodayDate()}></input>
-        <input id='location-input' placeholder='Lugar' type='text'></input>
-        <form>
-          <input type="radio" id="owner-arthur" className="input-owner" name="input-radio" value="Arthur" />
-          <label for='owner-arthur'>Arthur</label><br />
-          <input type='radio' id='owner-maysa' className='input-owner' name='input-radio' value='Maysa' />
-          <label for='owner-maysa'>Maysa</label><br />
-          <input type='radio' id='owner-split' className='input-owner' name='input-radio' value='Dividido' />
-          <label for='owner-split'>Dividido</label>
-        </form>
-        <input id='value-input' placeholder='Valor' type='number'></input>
+      <div className='table-div'>
+        <table id="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Lugar</th>
+              <th>Responsável</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
       </div>
-      <span id='check-input'></span>
-      <div className='buttons'>
-        <button className='add-btn' onClick={handleAddButon}>Add</button>
-        <button className='delete-btn' onClick={handleDeleteButon}>Delete all</button>
-      </div>
+      <Form handleAddButon = {handleAddButon} handleDeleteAll = {handleDeleteButon}/>
     </div>
   );
 }
@@ -128,10 +106,10 @@ function addExpenseToTable(props) {
     const placeCell = newRow.insertCell(1)
     const ownerCell = newRow.insertCell(2)
     const valueCell = newRow.insertCell(3)
-    dateCell.textContent = data[0].date
-    placeCell.textContent = data[0].place
-    ownerCell.textContent = data[0].owner
-    valueCell.textContent = data[0].value
+    dateCell.textContent = data.date
+    placeCell.textContent = data.place
+    ownerCell.textContent = data.owner
+    valueCell.textContent = data.value
 
     newRow.addEventListener('dblclick', function() {
       let locationItemInDB = ref(database, `expensesControl/${itemID}`)
@@ -140,53 +118,12 @@ function addExpenseToTable(props) {
   });
 }
 
-function handleAddButon() {
-  const dateInput = document.getElementById('date-input').value
-  let dateValue = ''
-  if (dateInput === '') {
-    dateValue = getTodayDate()
-  }  else {
-    dateValue = dateInput
-  }
-  const locationInput = document.getElementById('location-input').value
-  const selectedOwner = document.querySelector('.input-owner:checked')
-  const valueInput = document.getElementById('value-input').value
-  const inputOwner = selectedOwner ? selectedOwner.value : 'Dividido';
-  const inputObject = [{
-    date: dateValue,
-    place: locationInput,
-    owner: inputOwner,
-    value: valueInput
-  }] 
-  if (valueInput > 0) {
-    push(expensesInDB, inputObject)
-    resetInputFields()
-  }
-  else {
-    const checkInput = document.getElementById('check-input')
-    checkInput.textContent = 'Qual o valor?'
-  }
+function handleAddButon(inputObject) {
+  push(expensesInDB, inputObject)
 }
 
 function handleDeleteButon() {
   remove(expensesInDB)
 }
 
-function getTodayDate() {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function resetInputFields() {
-  const dateInput = document.getElementById('date-input')
-  const locationInput = document.getElementById('location-input')
-  const valueInput = document.getElementById('value-input')
-
-  dateInput.value = ''
-  locationInput.value = ''
-  valueInput.value = ''
-}
 export default App;

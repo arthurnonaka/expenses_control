@@ -2,6 +2,7 @@ import React from "react";
 import { PieChart, Pie, Legend } from 'recharts'
 
 export default function ChartRender(props) {
+    const outerRadius_ = 70
     const dataValues = [
         {typeValue: 'Sozinho', value: props.soloValue, fill:"#7C60DB"},
         {typeValue: 'Dividido', value: props.splitValue / 2, fill:"#FFA499"}
@@ -15,29 +16,36 @@ export default function ChartRender(props) {
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
         return (
-            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'end' : 'start'} dominantBaseline="central" fontWeight="bold">
-                {`R$ ${(percent * totalValue).toFixed(2)}`}
+            <text 
+                x={x} 
+                y={y} 
+                fill="white" 
+                textAnchor={x > cx ? 'start' : 'end'} 
+                dominantBaseline="central" 
+                fontWeight="bold"
+                fontSize="small">
+                    {percent>0?`${(percent * totalValue).toFixed(0)}`:""}
             </text>
         );
     };
     return (
         <div className="charts">
-            <p>{props.name}</p>
+            <h3>{props.name}</h3>
             <div className="charts--chart">
-                <PieChart className="charts--donut" width={250} height={250}>
+                <PieChart className="charts--donut" width={175} height={outerRadius_*2+10}>
                     <Pie 
                         data={dataValues} 
                         dataKey="value" 
                         nameKey="name" 
-                        outerRadius={100} 
-                        innerRadius={60} 
+                        outerRadius={outerRadius_} 
+                        innerRadius={40} 
                         fill="#8884d8"
                         labelLine={false} 
                         label={renderCustomizedLabel}
                         />
                 </PieChart>
                 <div className="charts--total">
-                    <h2>{`R$ ${totalValue}`}</h2>
+                    <h3>{`R$${totalValue}`}</h3>
                     <text>Total</text>
                 </div>
             </div>
