@@ -1,5 +1,5 @@
 import React from "react";
-import { PieChart, Pie, Legend } from 'recharts'
+import { PieChart, Pie } from 'recharts'
 
 export default function ChartRender(props) {
     const outerRadius_ = 70
