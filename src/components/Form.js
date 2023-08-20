@@ -20,11 +20,25 @@ export default function Form(props) {
         })
     }
     
+    function formatDate(inputDate) {
+        // Parse the input date in YYYY-MM-DD format
+        const parts = inputDate.split("-");
+        const year = parts[0];
+        const month = parts[1];
+        const day = parts[2];
+        
+        // Construct the formatted date in DD/MM/YYYY format
+        const formattedDate = `${day}/${month}/${year}`;
+        
+        return formattedDate;
+    }
+
     function handleAdd(event) {
         event.preventDefault()
-        
         if (formData.date === '') {
             formData.date = getTodayDate()
+        } else {
+            formData.date = formatDate(formData.date)
         }
         if (formData.owner === '') {
             formData.owner = "Dividido"

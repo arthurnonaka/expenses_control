@@ -45,7 +45,7 @@ export default function ChartRender(props) {
                         />
                 </PieChart>
                 <div className="charts--total">
-                    <h3>{`R$${totalValue}`}</h3>
+                    <h3>{`R$${totalValue.toFixed(2)}`}</h3>
                     <text>Total</text>
                 </div>
             </div>
