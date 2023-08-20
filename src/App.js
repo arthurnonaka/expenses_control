@@ -29,13 +29,13 @@ function App() {
         let newExpenseToSplit = 0
         for (let i = 0; i < itemsArray.length; i++) {
           addExpenseToTable(itemsArray[i])
-          if (itemsArray[i][1].owner == 'Arthur') {
+          if (itemsArray[i][1].owner === 'Arthur') {
             newExpenseArthur += parseFloat(itemsArray[i][1].value)
           }
-          else if (itemsArray[i][1].owner == 'Maysa') {
+          else if (itemsArray[i][1].owner === 'Maysa') {
             newExpenseMaysa += parseFloat(itemsArray[i][1].value)
           }
-          else if (itemsArray[i][1].owner == 'Dividido') {
+          else if (itemsArray[i][1].owner === 'Dividido') {
             newExpenseToSplit += parseFloat(itemsArray[i][1].value)
           }
         }
