@@ -66,6 +66,12 @@ h3 {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
+.table-div {
+  max-height: calc(100vh - 400px); /* Set the desired max height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  margin-bottom: 20px;
+}
+
 #table thead tr {
   background-color: #7C60DB;
   color: #ffffff;
@@ -80,6 +86,7 @@ h3 {
 
 form {
   position: fixed;
+  max-height: calc(100vh - 10px);
   bottom: 0;
   width: 100%;
   display:flex;

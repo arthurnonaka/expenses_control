@@ -98,7 +98,6 @@ function clearTable() {
 function addExpenseToTable(props) {
   const tbody = document.getElementById('table').getElementsByTagName('tbody')[0]
   let itemID = props[0]
-  
   props.forEach(data => {
     const newRow = tbody.insertRow()
     newRow.setAttribute('data-key', data.key)
@@ -123,7 +122,7 @@ function handleAddButon(inputObject) {
 }
 
 function handleDeleteButon() {
-  remove(expensesInDB)
+  // remove(expensesInDB)
 }
 
 export default App;
